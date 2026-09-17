@@ -15,8 +15,14 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('workspaces.index')" :active="request()->routeIs('workspaces.*')">
-                        {{ __('Workspaces') }}
+                    <x-nav-link :href="route('workspaces.index')" :active="request()->routeIs('workspaces.index') || request()->routeIs('workspaces.show')">
+                        {{ __('Workspaces Saya') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('workspaces.create')" :active="request()->routeIs('workspaces.create')">
+                        <span class="inline-flex items-center gap-1.5 font-bold text-indigo-600">
+                            + Buat Workspace
+                        </span>
                     </x-nav-link>
 
                     @if(Auth::user()->isAdmin())
@@ -29,12 +35,8 @@
                 </div>
             </div>
 
-            <!-- Quick Action & Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-3">
-                <a href="{{ route('workspaces.create') }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
-                    + Workspace
-                </a>
-
+            <!-- Settings Dropdown -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -87,12 +89,12 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('workspaces.index')" :active="request()->routeIs('workspaces.*')">
-                {{ __('Workspaces') }}
+            <x-responsive-nav-link :href="route('workspaces.index')" :active="request()->routeIs('workspaces.index')">
+                {{ __('Workspaces Saya') }}
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link :href="route('workspaces.create')">
-                {{ __('+ Buat Workspace') }}
+            <x-responsive-nav-link :href="route('workspaces.create')" :active="request()->routeIs('workspaces.create')">
+                <span class="font-bold text-indigo-600">{{ __('+ Buat Workspace') }}</span>
             </x-responsive-nav-link>
 
             @if(Auth::user()->isAdmin())
