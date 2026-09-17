@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,10 @@ Route::middleware('auth')->group(function () {
 
     // Project Routes (nested inside workspaces)
     Route::resource('workspaces.projects', ProjectController::class);
+
+    // Task Routes (nested inside projects)
+    Route::resource('workspaces.projects.tasks', TaskController::class)->except(['index', 'show']);
+    Route::patch('workspaces/{workspace}/projects/{project}/tasks/{task}/mark-done', [TaskController::class, 'markDone'])->name('workspaces.projects.tasks.markDone');
 });
 
 // Admin Routes
