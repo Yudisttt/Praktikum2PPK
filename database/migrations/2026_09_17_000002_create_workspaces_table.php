@@ -6,29 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('workspaces', function (Blueprint $table) {
             $table->id();
-
             $table->string('name');
-
-            $table->text('description')->nullable();
-
-            $table->foreignId('owner_id')
-                ->constrained('users')
-                ->cascadeOnDelete();
-
+            // referensi cepat "siapa pembuat/pemilik utama workspace"
+            // hak akses tetap dicek lewat workspace_members.role, bukan kolom ini
+            $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('workspaces');
