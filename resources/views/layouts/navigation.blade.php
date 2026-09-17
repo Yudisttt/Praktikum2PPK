@@ -29,8 +29,12 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <!-- Quick Action & Settings Dropdown -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-3">
+                <a href="{{ route('workspaces.create') }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
+                    + Workspace
+                </a>
+
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -85,6 +89,10 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('workspaces.index')" :active="request()->routeIs('workspaces.*')">
                 {{ __('Workspaces') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('workspaces.create')">
+                {{ __('+ Buat Workspace') }}
             </x-responsive-nav-link>
 
             @if(Auth::user()->isAdmin())

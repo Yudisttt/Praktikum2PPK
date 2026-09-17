@@ -32,16 +32,23 @@
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex items-center justify-between mt-6">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a class="underline text-sm text-gray-600 hover:text-gray-900" href="{{ route('password.request') }}">
+                    {{ __('Lupa password?') }}
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
+            <x-primary-button>
                 {{ __('Log in') }}
             </x-primary-button>
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-gray-200 text-center">
+            <p class="text-sm text-gray-600 mb-3">Belum memiliki akun Jara?</p>
+            <a href="{{ route('register') }}" class="inline-block w-full text-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-indigo-600 font-semibold rounded-md transition text-sm">
+                Daftar Akun Baru &rarr;
+            </a>
         </div>
     </form>
 </x-guest-layout>
