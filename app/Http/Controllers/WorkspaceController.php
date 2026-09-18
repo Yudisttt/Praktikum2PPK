@@ -9,6 +9,7 @@ use App\Http\Requests\Workspace\UpdateWorkspaceRequest;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class WorkspaceController extends Controller
@@ -29,15 +30,19 @@ class WorkspaceController extends Controller
     {
         $user = auth()->user();
 
-        $workspace = Workspace::create([
-            'name' => $request->validated('name'),
-            'owner_id' => $user->id,
-        ]);
+        $workspace = DB::transaction(function () use ($user, $request) {
+            $workspace = Workspace::create([
+                'name' => $request->validated('name'),
+                'owner_id' => $user->id,
+            ]);
 
-        // Auto insert owner to workspace_members
-        $workspace->members()->attach($user->id, [
-            'role' => WorkspaceRole::OWNER->value,
-        ]);
+            // Auto insert owner to workspace_members
+            $workspace->members()->attach($user->id, [
+                'role' => WorkspaceRole::OWNER->value,
+            ]);
+
+            return $workspace;
+        });
 
         return redirect()->route('workspaces.show', $workspace)
             ->with('success', 'Workspace berhasil dibuat.');
@@ -79,7 +84,9 @@ class WorkspaceController extends Controller
     {
         $this->authorize('delete', $workspace);
 
-        $workspace->delete();
+        DB::transaction(function () use ($workspace) {
+            $workspace->delete();
+        });
 
         return redirect()->route('workspaces.index')
             ->with('success', 'Workspace berhasil dihapus.');
