@@ -30,22 +30,30 @@ class WorkspaceController extends Controller
     {
         $user = auth()->user();
 
-        $workspace = DB::transaction(function () use ($user, $request) {
-            $workspace = Workspace::create([
-                'name' => $request->validated('name'),
-                'owner_id' => $user->id,
-            ]);
+AddWorkspace
+        try {
+            $workspace = DB::transaction(function () use ($request, $user) {
+                $workspace = Workspace::create([
+                    'name' => $request->validated('name'),
+                    'owner_id' => $user->id,
+                ]);
 
-            // Auto insert owner to workspace_members
-            $workspace->members()->attach($user->id, [
-                'role' => WorkspaceRole::OWNER->value,
-            ]);
+                // Auto insert owner to workspace_members (FR-2, FR-3)
+                $workspace->members()->attach($user->id, [
+                    'role' => WorkspaceRole::OWNER->value,
+                ]);
 
-            return $workspace;
-        });
+                return $workspace;
+            });
 
-        return redirect()->route('workspaces.show', $workspace)
-            ->with('success', 'Workspace berhasil dibuat.');
+            return redirect()->route('workspaces.show', $workspace)
+                ->with('success', 'Workspace berhasil dibuat.');
+        } catch (\Throwable $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal membuat workspace. Terjadi kesalahan pada sistem.');
+        }
+
     }
 
     public function show(Workspace $workspace): View
@@ -84,12 +92,19 @@ class WorkspaceController extends Controller
     {
         $this->authorize('delete', $workspace);
 
-        DB::transaction(function () use ($workspace) {
-            $workspace->delete();
-        });
+        try {
+            DB::transaction(function () use ($workspace) {
+                // Menghapus seluruh relasi keanggotaan dan workspace secara atomik (FR-5)
+                $workspace->members()->detach();
+                $workspace->delete();
+            });
 
-        return redirect()->route('workspaces.index')
-            ->with('success', 'Workspace berhasil dihapus.');
+            return redirect()->route('workspaces.index')
+                ->with('success', 'Workspace berhasil dihapus.');
+        } catch (\Throwable $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus workspace. Terjadi kesalahan pada sistem.');
+        }
     }
 
     public function inviteMember(InviteMemberRequest $request, Workspace $workspace): RedirectResponse
