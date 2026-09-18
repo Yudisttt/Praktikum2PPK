@@ -30,6 +30,7 @@ class WorkspaceController extends Controller
     {
         $user = auth()->user();
 
+AddWorkspace
         try {
             $workspace = DB::transaction(function () use ($request, $user) {
                 $workspace = Workspace::create([
@@ -52,6 +53,7 @@ class WorkspaceController extends Controller
                 ->withInput()
                 ->with('error', 'Gagal membuat workspace. Terjadi kesalahan pada sistem.');
         }
+
     }
 
     public function show(Workspace $workspace): View

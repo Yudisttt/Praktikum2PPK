@@ -159,3 +159,52 @@ test('member cannot invite members from workspace', function () {
 
     $response->assertStatus(403);
 });
+
+test('NFR-3: only user with owner role in workspace_members can delete workspace', function () {
+    $owner = User::factory()->create(['status' => true]);
+    $member = User::factory()->create(['status' => true]);
+    $outsider = User::factory()->create(['status' => true]);
+
+    $workspace = Workspace::create(['name' => 'Secure Workspace', 'owner_id' => $owner->id]);
+    $workspace->members()->attach($owner->id, ['role' => WorkspaceRole::OWNER->value]);
+    $workspace->members()->attach($member->id, ['role' => WorkspaceRole::MEMBER->value]);
+
+    // Member attempt to delete -> 403 Forbidden
+    $memberResponse = $this->actingAs($member)->delete(route('workspaces.destroy', $workspace));
+    $memberResponse->assertStatus(403);
+    $this->assertDatabaseHas('workspaces', ['id' => $workspace->id]);
+
+    // Outsider attempt to delete -> 403 Forbidden
+    $outsiderResponse = $this->actingAs($outsider)->delete(route('workspaces.destroy', $workspace));
+    $outsiderResponse->assertStatus(403);
+    $this->assertDatabaseHas('workspaces', ['id' => $workspace->id]);
+
+    // Owner attempt to delete -> 302 Redirect & deleted
+    $ownerResponse = $this->actingAs($owner)->delete(route('workspaces.destroy', $workspace));
+    $ownerResponse->assertRedirect(route('workspaces.index'));
+    $this->assertDatabaseMissing('workspaces', ['id' => $workspace->id]);
+});
+
+test('NFR-4: workspace records created_at and updated_at timestamps for auditability', function () {
+    $user = User::factory()->create(['status' => true]);
+
+    $this->actingAs($user)->post(route('workspaces.store'), [
+        'name' => 'Audited Workspace',
+    ]);
+
+    $workspace = Workspace::where('name', 'Audited Workspace')->first();
+    expect($workspace)->not->toBeNull();
+    expect($workspace->created_at)->not->toBeNull();
+    expect($workspace->updated_at)->not->toBeNull();
+});
+
+test('NFR-5: workspace show page contains explicit confirmation on delete action', function () {
+    $owner = User::factory()->create(['status' => true]);
+    $workspace = Workspace::create(['name' => 'UI Confirmation Workspace', 'owner_id' => $owner->id]);
+    $workspace->members()->attach($owner->id, ['role' => WorkspaceRole::OWNER->value]);
+
+    $response = $this->actingAs($owner)->get(route('workspaces.show', $workspace));
+
+    $response->assertOk();
+    $response->assertSee('onsubmit="return confirm(', false);
+});
